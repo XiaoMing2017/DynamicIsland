@@ -14,132 +14,110 @@ import com.dynamicisland.service.FloatingService
 import com.dynamicisland.utils.IslandPrefs
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var b: ActivityMainBinding
     private lateinit var prefs: IslandPrefs
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
+    override fun onCreate(s: Bundle?) {
+        super.onCreate(s)
+        b = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(b.root)
         prefs = IslandPrefs(this)
         updateStatus()
         setupSliders()
 
-        binding.btnOverlay.setOnClickListener {
-            if (!Settings.canDrawOverlays(this)) {
-                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")))
-            } else {
-                Toast.makeText(this, "悬浮窗权限已开启 ✓", Toast.LENGTH_SHORT).show()
-            }
+        b.btnOverlay.setOnClickListener {
+            if (!Settings.canDrawOverlays(this))
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+            else toast("悬浮窗权限已开启 ✓")
         }
-
-        binding.btnNotification.setOnClickListener {
-            if (!isNotificationListenerEnabled()) {
-                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-            } else {
-                Toast.makeText(this, "通知权限已开启 ✓", Toast.LENGTH_SHORT).show()
-            }
+        b.btnNotification.setOnClickListener {
+            if (!isNLEnabled()) startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            else toast("通知权限已开启 ✓")
         }
-
-        binding.btnStart.setOnClickListener {
-            when {
-                !Settings.canDrawOverlays(this) ->
-                    Toast.makeText(this, "请先开启悬浮窗权限", Toast.LENGTH_SHORT).show()
-                !isNotificationListenerEnabled() ->
-                    Toast.makeText(this, "请先开启通知监听权限", Toast.LENGTH_SHORT).show()
-                else -> {
-                    startForegroundService(Intent(this, FloatingService::class.java))
-                    Toast.makeText(this, "灵动岛已启动！", Toast.LENGTH_SHORT).show()
-                    binding.btnStart.text = "运行中 ✓"
-                    binding.btnStart.isEnabled = false
-                }
-            }
+        b.btnStart.setOnClickListener {
+            if (!Settings.canDrawOverlays(this)) { toast("请先开启悬浮窗权限"); return@setOnClickListener }
+            if (!isNLEnabled())                  { toast("请先开启通知监听权限"); return@setOnClickListener }
+            startForegroundService(Intent(this, FloatingService::class.java))
+            toast("灵动岛已启动！")
+            b.btnStart.text = "运行中 ✓"; b.btnStart.isEnabled = false
         }
-
-        binding.btnStop.setOnClickListener {
+        b.btnStop.setOnClickListener {
             stopService(Intent(this, FloatingService::class.java))
-            binding.btnStart.text = "启动灵动岛"
-            binding.btnStart.isEnabled = true
-            Toast.makeText(this, "灵动岛已停止", Toast.LENGTH_SHORT).show()
+            b.btnStart.text = "启动灵动岛"; b.btnStart.isEnabled = true; toast("已停止")
+        }
+        b.btnTest.setOnClickListener {
+            val svc = FloatingService.instance
+            if (svc == null) { toast("请先启动灵动岛"); return@setOnClickListener }
+            listOf(
+                Triple("com.tencent.mm",       "微信",     "张三: 你在吗？有空吗"),
+                Triple("com.netease.cloudmusic","网易云音乐","晴天 - 周杰伦"),
+                Triple("com.android.dialer",   "来电",     "李四 正在呼叫"),
+                Triple("com.tencent.mobileqq", "QQ",      "你有一条新消息")
+            ).random().let { (pkg, app, title) -> svc.onNewNotification(pkg, app, title, "点击查看") }
         }
     }
 
     private fun setupSliders() {
-        // Y position (0–200px)
-        binding.seekY.max = 200
-        binding.seekY.progress = prefs.positionY
-        binding.labelY.text = "距顶部距离：${prefs.positionY}px"
-        binding.seekY.setOnSeekBarChangeListener(seekListener { v ->
-            prefs.positionY = v
-            binding.labelY.text = "距顶部距离：${v}px"
-            notifyUpdate()
-        })
+        // Y offset: range -60 to +60, default -8
+        b.seekY.max = 120
+        b.seekY.progress = prefs.offsetY + 60
+        b.labelY.text = "纵向位置：${prefs.offsetY}px（负数=上移进状态栏）"
+        b.seekY.on { v -> prefs.offsetY = v - 60; b.labelY.text = "纵向位置：${v - 60}px（负数=上移进状态栏）"; push() }
 
-        // Expanded width (50–100%)
-        binding.seekWidth.max = 50
-        binding.seekWidth.progress = prefs.widthPercent - 50
-        binding.labelWidth.text = "展开宽度：${prefs.widthPercent}%"
-        binding.seekWidth.setOnSeekBarChangeListener(seekListener { v ->
-            prefs.widthPercent = v + 50
-            binding.labelWidth.text = "展开宽度：${v + 50}%"
-            notifyUpdate()
-        })
+        // X offset: -100 to +100
+        b.seekX.max = 200
+        b.seekX.progress = prefs.offsetX + 100
+        b.labelX.text = "横向位置：${prefs.offsetX}px（负数=左移）"
+        b.seekX.on { v -> prefs.offsetX = v - 100; b.labelX.text = "横向位置：${v - 100}px（负数=左移）"; push() }
 
-        // Collapsed pill width (80–160dp)
-        binding.seekPillWidth.max = 80
-        binding.seekPillWidth.progress = prefs.pillWidthDp - 80
-        binding.labelPillWidth.text = "收起宽度：${prefs.pillWidthDp}dp"
-        binding.seekPillWidth.setOnSeekBarChangeListener(seekListener { v ->
-            prefs.pillWidthDp = v + 80
-            binding.labelPillWidth.text = "收起宽度：${v + 80}dp"
-            notifyUpdate()
-        })
+        // Expanded width
+        b.seekWidth.max = 50
+        b.seekWidth.progress = prefs.widthPercent - 50
+        b.labelWidth.text = "展开宽度：${prefs.widthPercent}%"
+        b.seekWidth.on { v -> prefs.widthPercent = v + 50; b.labelWidth.text = "展开宽度：${v + 50}%"; push() }
 
-        // Expanded height (32–80dp)
-        binding.seekHeight.max = 48
-        binding.seekHeight.progress = prefs.expandedHeightDp - 32
-        binding.labelHeight.text = "展开高度：${prefs.expandedHeightDp}dp"
-        binding.seekHeight.setOnSeekBarChangeListener(seekListener { v ->
-            prefs.expandedHeightDp = v + 32
-            binding.labelHeight.text = "展开高度：${v + 32}dp"
-            notifyUpdate()
-        })
+        // Pill width
+        b.seekPillW.max = 100
+        b.seekPillW.progress = prefs.pillWidthDp - 60
+        b.labelPillW.text = "收起宽度：${prefs.pillWidthDp}dp"
+        b.seekPillW.on { v -> prefs.pillWidthDp = v + 60; b.labelPillW.text = "收起宽度：${v + 60}dp"; push() }
+
+        // Pill height
+        b.seekPillH.max = 30
+        b.seekPillH.progress = prefs.pillHeightDp - 20
+        b.labelPillH.text = "收起高度：${prefs.pillHeightDp}dp"
+        b.seekPillH.on { v -> prefs.pillHeightDp = v + 20; b.labelPillH.text = "收起高度：${v + 20}dp"; push() }
+
+        // Expanded height
+        b.seekExpdH.max = 60
+        b.seekExpdH.progress = prefs.expandedHeightDp - 50
+        b.labelExpdH.text = "展开高度：${prefs.expandedHeightDp}dp"
+        b.seekExpdH.on { v -> prefs.expandedHeightDp = v + 50; b.labelExpdH.text = "展开高度：${v + 50}dp"; push() }
     }
 
-    private fun seekListener(onChange: (Int) -> Unit) = object : SeekBar.OnSeekBarChangeListener {
-        override fun onProgressChanged(sb: SeekBar, v: Int, user: Boolean) = onChange(v)
-        override fun onStartTrackingTouch(sb: SeekBar) {}
-        override fun onStopTrackingTouch(sb: SeekBar) {}
-    }
+    private fun SeekBar.on(f: (Int) -> Unit) = setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(s: SeekBar, v: Int, u: Boolean) = f(v)
+        override fun onStartTrackingTouch(s: SeekBar) {}
+        override fun onStopTrackingTouch(s: SeekBar) {}
+    })
 
-    private fun notifyUpdate() {
-        sendBroadcast(Intent(FloatingService.ACTION_UPDATE_PREFS))
-    }
+    private fun push() = sendBroadcast(Intent(FloatingService.ACTION_UPDATE_PREFS))
 
-    override fun onResume() {
-        super.onResume()
-        updateStatus()
-    }
+    override fun onResume() { super.onResume(); updateStatus() }
 
     private fun updateStatus() {
-        val overlayOk = Settings.canDrawOverlays(this)
-        val notifOk = isNotificationListenerEnabled()
-        binding.statusOverlay.text = if (overlayOk) "✓ 悬浮窗权限已开启" else "✗ 悬浮窗权限未开启"
-        binding.statusNotification.text = if (notifOk) "✓ 通知权限已开启" else "✗ 通知权限未开启"
-        binding.btnStart.isEnabled = overlayOk && notifOk
+        val o = Settings.canDrawOverlays(this); val n = isNLEnabled()
+        b.statusOverlay.text = if (o) "✓ 悬浮窗权限已开启" else "✗ 悬浮窗权限未开启"
+        b.statusOverlay.setTextColor(if (o) 0xFF30D158.toInt() else 0xFFFF453A.toInt())
+        b.statusNotification.text = if (n) "✓ 通知权限已开启" else "✗ 通知权限未开启"
+        b.statusNotification.setTextColor(if (n) 0xFF30D158.toInt() else 0xFFFF453A.toInt())
+        b.btnStart.isEnabled = o && n
     }
 
-    private fun isNotificationListenerEnabled(): Boolean {
-        val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
-        if (!TextUtils.isEmpty(flat)) {
-            flat.split(":").forEach {
-                val cn = ComponentName.unflattenFromString(it)
-                if (cn != null && TextUtils.equals(packageName, cn.packageName)) return true
-            }
-        }
-        return false
+    private fun isNLEnabled(): Boolean {
+        val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: return false
+        return flat.split(":").any { ComponentName.unflattenFromString(it)?.packageName == packageName }
     }
+
+    private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }

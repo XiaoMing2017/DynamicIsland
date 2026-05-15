@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- For drawing system overlays -->
+    <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
 
     <application
         android:allowBackup="true"
@@ -14,7 +16,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DynamicIsland">
 
-        <!-- Main setup activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -25,7 +26,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Notification listener service -->
         <service
             android:name=".service.NotificationService"
             android:exported="true"
@@ -36,13 +36,11 @@
             </intent-filter>
         </service>
 
-        <!-- Floating window foreground service -->
         <service
             android:name=".service.FloatingService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
 
-        <!-- Boot receiver -->
         <receiver
             android:name=".service.BootReceiver"
             android:exported="true">

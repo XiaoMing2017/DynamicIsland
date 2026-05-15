@@ -6,7 +6,7 @@ class IslandPrefs(context: Context) {
     private val prefs = context.getSharedPreferences("island_prefs", Context.MODE_PRIVATE)
 
     var positionY: Int
-        get() = prefs.getInt("position_y", 40)
+        get() = prefs.getInt("position_y", 0)
         set(v) = prefs.edit().putInt("position_y", v).apply()
 
     var widthPercent: Int

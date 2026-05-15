@@ -14,6 +14,7 @@ class FloatingService : Service() {
 
     companion object {
         const val ACTION_UPDATE_PREFS = "com.dynamicisland.UPDATE_PREFS"
+        var instance: FloatingService? = null
     }
 
     private lateinit var windowManager: WindowManager
@@ -28,9 +29,9 @@ class FloatingService : Service() {
                 NotificationService.ACTION_NOTIFICATION -> {
                     val removed = intent.getBooleanExtra(NotificationService.EXTRA_REMOVED, false)
                     if (removed) return
-                    val pkg     = intent.getStringExtra(NotificationService.EXTRA_PACKAGE) ?: return
-                    val title   = intent.getStringExtra(NotificationService.EXTRA_TITLE) ?: return
-                    val text    = intent.getStringExtra(NotificationService.EXTRA_TEXT) ?: ""
+                    val pkg = intent.getStringExtra(NotificationService.EXTRA_PACKAGE) ?: return
+                    val title = intent.getStringExtra(NotificationService.EXTRA_TITLE) ?: return
+                    val text = intent.getStringExtra(NotificationService.EXTRA_TEXT) ?: ""
                     val appName = intent.getStringExtra(NotificationService.EXTRA_APP_NAME) ?: ""
                     islandView.showNotification(pkg, appName, title, text)
                 }
@@ -43,6 +44,7 @@ class FloatingService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         prefs = IslandPrefs(this)
         startForegroundNotification()
         setupWindowManager()
@@ -51,6 +53,11 @@ class FloatingService : Service() {
             addAction(ACTION_UPDATE_PREFS)
         }
         registerReceiver(notificationReceiver, filter, RECEIVER_NOT_EXPORTED)
+    }
+
+    // Called directly by NotificationService
+    fun onNewNotification(pkg: String, appName: String, title: String, text: String) {
+        islandView.showNotification(pkg, appName, title, text)
     }
 
     private fun startForegroundNotification() {
@@ -69,6 +76,10 @@ class FloatingService : Service() {
 
     private fun setupWindowManager() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+
+        // Get real status bar height
+        val statusBarHeight = getStatusBarHeight()
+
         islandView = IslandView(this, prefs)
 
         layoutParams = WindowManager.LayoutParams(
@@ -82,24 +93,30 @@ class FloatingService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            y = prefs.positionY
+            // Position below status bar + user offset
+            y = statusBarHeight + prefs.positionY
         }
 
         windowManager.addView(islandView, layoutParams)
         isAdded = true
     }
 
+    private fun getStatusBarHeight(): Int {
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 60
+    }
+
     private fun applyPrefs() {
         if (!isAdded) return
-        // Update Y position immediately
-        layoutParams.y = prefs.positionY
+        val statusBarHeight = getStatusBarHeight()
+        layoutParams.y = statusBarHeight + prefs.positionY
         windowManager.updateViewLayout(islandView, layoutParams)
-        // Tell IslandView about new size prefs
         islandView.updatePrefs(prefs)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        instance = null
         if (isAdded) { windowManager.removeView(islandView); isAdded = false }
         try { unregisterReceiver(notificationReceiver) } catch (e: Exception) {}
     }

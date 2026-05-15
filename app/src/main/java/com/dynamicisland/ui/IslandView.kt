@@ -161,16 +161,13 @@ class IslandView(context: Context, private var prefs: IslandPrefs) : FrameLayout
     }
 
     private fun updateAppIcon(appName: String, color: Int) {
-        // Create a simple icon with first letter
         val bitmap = Bitmap.createBitmap(dp(24f), dp(24f), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             this.color = color
             style = Paint.Style.FILL
         }
-        // Draw circle
         canvas.drawCircle(dp(12f), dp(12f), dp(12f), paint)
-        // Draw letter
         paint.color = Color.WHITE
         paint.textSize = dp(12f)
         paint.textAlign = Paint.Align.CENTER

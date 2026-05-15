@@ -14,7 +14,9 @@ class NotificationService : NotificationListenerService() {
         const val EXTRA_APP_NAME = "app_name"
         const val EXTRA_REMOVED = "removed"
 
-        // Known app package names
+        // Singleton for direct access
+        var instance: NotificationService? = null
+
         private val APP_NAMES = mapOf(
             "com.tencent.mm" to "微信",
             "com.tencent.mobileqq" to "QQ",
@@ -33,6 +35,16 @@ class NotificationService : NotificationListenerService() {
         )
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        instance = this
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        instance = null
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val extras = sbn.notification.extras
         val title = extras.getString("android.title") ?: return
@@ -40,9 +52,9 @@ class NotificationService : NotificationListenerService() {
         val pkg = sbn.packageName
         val appName = APP_NAMES[pkg] ?: getAppLabel(pkg)
 
-        // Skip empty or system notifications
         if (title.isBlank()) return
 
+        // Broadcast to FloatingService
         val intent = Intent(ACTION_NOTIFICATION).apply {
             putExtra(EXTRA_PACKAGE, pkg)
             putExtra(EXTRA_TITLE, title)
@@ -51,6 +63,9 @@ class NotificationService : NotificationListenerService() {
             putExtra(EXTRA_REMOVED, false)
         }
         sendBroadcast(intent)
+
+        // Also call directly for immediate response
+        FloatingService.instance?.onNewNotification(pkg, appName, title, text)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {

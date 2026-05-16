@@ -49,11 +49,14 @@ class FloatingService : Service() {
 
     private fun startFg() {
         val ch = "island_svc"
-        getSystemService(NotificationManager::class.java)
-            .createNotificationChannel(NotificationChannel(ch, "灵动岛", NotificationManager.IMPORTANCE_LOW))
+        getSystemService(NotificationManager::class.java).createNotificationChannel(
+            NotificationChannel(ch, "灵动岛", NotificationManager.IMPORTANCE_LOW)
+        )
         startForeground(1, NotificationCompat.Builder(this, ch)
-            .setContentTitle("灵动岛运行中").setSmallIcon(R.drawable.ic_island)
-            .setPriority(NotificationCompat.PRIORITY_LOW).build())
+            .setContentTitle("灵动岛运行中")
+            .setSmallIcon(R.drawable.ic_island)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build())
     }
 
     private fun setupWindow() {

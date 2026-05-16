@@ -3,6 +3,7 @@ package com.dynamicisland.service
 import android.app.*
 import android.content.*
 import android.graphics.PixelFormat
+import android.graphics.drawable.Drawable
 import android.os.*
 import android.view.*
 import androidx.core.app.NotificationCompat
@@ -17,7 +18,7 @@ class FloatingService : Service() {
         var instance: FloatingService? = null
     }
 
-    private lateinit var windowManager: WindowManager
+    private lateinit var wm: WindowManager
     private lateinit var islandView: IslandView
     private lateinit var prefs: IslandPrefs
     private lateinit var wlp: WindowManager.LayoutParams
@@ -29,8 +30,12 @@ class FloatingService : Service() {
         }
     }
 
-    fun onNewNotification(pkg: String, appName: String, title: String, text: String) {
-        islandView.showNotification(pkg, appName, title, text)
+    fun onNewNotification(
+        pkg: String, appName: String, title: String, text: String,
+        icon: Drawable?, isCall: Boolean, isMusic: Boolean,
+        pendingIntent: PendingIntent?
+    ) {
+        islandView.showNotification(pkg, appName, title, text, icon, isCall, isMusic, pendingIntent)
     }
 
     override fun onCreate() {
@@ -52,14 +57,12 @@ class FloatingService : Service() {
     }
 
     private fun setupWindow() {
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        wm = getSystemService(WINDOW_SERVICE) as WindowManager
         islandView = IslandView(this, prefs)
-
         wlp = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            // FLAG_LAYOUT_NO_LIMITS lets the view go above status bar with negative Y
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
@@ -68,10 +71,9 @@ class FloatingService : Service() {
         ).apply {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             x = prefs.offsetX
-            y = prefs.offsetY  // Negative = inside status bar, covering camera hole
+            y = prefs.offsetY
         }
-
-        windowManager.addView(islandView, wlp)
+        wm.addView(islandView, wlp)
         isAdded = true
     }
 
@@ -79,14 +81,14 @@ class FloatingService : Service() {
         if (!isAdded) return
         wlp.x = prefs.offsetX
         wlp.y = prefs.offsetY
-        windowManager.updateViewLayout(islandView, wlp)
+        wm.updateViewLayout(islandView, wlp)
         islandView.updatePrefs(prefs)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         instance = null
-        if (isAdded) { windowManager.removeView(islandView); isAdded = false }
+        if (isAdded) { wm.removeView(islandView); isAdded = false }
         try { unregisterReceiver(receiver) } catch (_: Exception) {}
     }
 

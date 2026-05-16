@@ -26,15 +26,6 @@ class NotificationService : NotificationListenerService() {
             "com.miui.player"             to "小米音乐",
             "com.google.android.apps.youtube.music" to "YouTube Music"
         )
-        val MUSIC_PKGS = setOf(
-            "com.netease.cloudmusic", "com.tencent.qqmusic", "com.kugou.android",
-            "com.spotify.music", "com.miui.player",
-            "com.google.android.apps.youtube.music", "com.apple.android.music"
-        )
-        val CALL_PKGS = setOf(
-            "com.android.dialer", "com.google.android.dialer",
-            "com.miui.phone", "com.samsung.android.incallui"
-        )
     }
 
     override fun onCreate() { super.onCreate(); instance = this }
@@ -42,29 +33,36 @@ class NotificationService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val pkg = sbn.packageName ?: return
+
+        // Skip music & call pkgs — handled by AccessibilityService with richer info
+        if (IslandAccessibilityService.MUSIC_PKGS.contains(pkg)) return
+        if (IslandAccessibilityService.CALL_PKGS.contains(pkg)) return
+        if (IslandAccessibilityService.NAV_PKGS.contains(pkg)) return
+
+        // Check blacklist
         if (IslandPrefs(applicationContext).blacklist.contains(pkg)) return
 
-        val extras = sbn.notification?.extras ?: return
-        val title  = extras.getString("android.title") ?: return
-        val text   = extras.getCharSequence("android.text")?.toString() ?: ""
+        val extras = sbn.notification.extras ?: return
+        val title = extras.getString("android.title") ?: return
+        val text  = extras.getCharSequence("android.text")?.toString() ?: ""
         if (title.isBlank()) return
 
-        val appName = APP_NAMES[pkg] ?: getAppLabel(pkg)
-        val icon    = getAppIcon(pkg)
-        val isCall  = CALL_PKGS.contains(pkg)
-        val isMusic = MUSIC_PKGS.contains(pkg)
+        val appName = APP_NAMES[pkg] ?: getLabel(pkg)
+        val icon    = getIcon(pkg)
 
         FloatingService.instance?.onNewNotification(
-            pkg, appName, title, text, icon, isCall, isMusic,
-            sbn.notification.contentIntent
+            pkg, appName, title, text, icon,
+            isCall  = false,
+            isMusic = false,
+            pendingIntent = sbn.notification.contentIntent
         )
     }
 
-    private fun getAppLabel(pkg: String): String = try {
+    private fun getLabel(pkg: String) = try {
         packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-    } catch (_: Exception) { pkg.substringAfterLast(".") }
+    } catch (e: Exception) { pkg.substringAfterLast(".") }
 
-    private fun getAppIcon(pkg: String): Drawable? = try {
+    private fun getIcon(pkg: String): Drawable? = try {
         packageManager.getApplicationIcon(pkg)
-    } catch (_: Exception) { null }
+    } catch (e: Exception) { null }
 }

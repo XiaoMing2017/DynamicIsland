@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"/>
 
     <application
         android:allowBackup="true"
@@ -21,7 +22,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.NotificationService"
+        <!-- Notification Listener: catches notification text -->
+        <service
+            android:name=".service.NotificationService"
             android:exported="true"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
@@ -29,10 +32,27 @@
             </intent-filter>
         </service>
 
-        <service android:name=".service.FloatingService"
+        <!-- Accessibility Service: catches music/call/nav real-time state -->
+        <service
+            android:name=".service.IslandAccessibilityService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service"/>
+        </service>
+
+        <!-- Floating window foreground service -->
+        <service
+            android:name=".service.FloatingService"
             android:exported="false"
             android:foregroundServiceType="specialUse"/>
 
+        <!-- Boot receiver -->
         <receiver android:name=".service.BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

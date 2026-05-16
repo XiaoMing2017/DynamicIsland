@@ -4,18 +4,15 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="vertical"
-      android:padding="20dp">
+  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+      android:orientation="vertical" android:padding="20dp">
 
     <!-- Header -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
         android:layout_marginTop="24dp" android:layout_marginBottom="24dp">
       <TextView android:layout_width="48dp" android:layout_height="48dp"
-          android:text="⬛" android:textSize="32sp" android:gravity="center"
+          android:text="⬛" android:textSize="30sp" android:gravity="center"
           android:background="#F5F5F5" android:layout_marginEnd="14dp"/>
       <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
           android:layout_weight="1" android:orientation="vertical">
@@ -28,50 +25,50 @@
       </LinearLayout>
     </LinearLayout>
 
-    <!-- Status card -->
+    <!-- Status row: 3 items -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:background="#F8F8F8"
         android:padding="14dp" android:layout_marginBottom="16dp">
-      <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-          android:layout_weight="1" android:orientation="horizontal" android:gravity="center_vertical">
-        <View android:layout_width="8dp" android:layout_height="8dp"
-            android:background="@drawable/dot_status_overlay"
-            android:layout_marginEnd="6dp"/>
-        <TextView android:id="@+id/statusOverlay" android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="悬浮窗权限" android:textColor="#E74C3C" android:textSize="12sp"/>
-      </LinearLayout>
-      <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-          android:layout_weight="1" android:orientation="horizontal"
-          android:gravity="center_vertical|end">
-        <View android:layout_width="8dp" android:layout_height="8dp"
-            android:background="@drawable/dot_status_notif"
-            android:layout_marginEnd="6dp"/>
-        <TextView android:id="@+id/statusNotification" android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="通知监听" android:textColor="#E74C3C" android:textSize="12sp"/>
-      </LinearLayout>
+      <TextView android:id="@+id/statusOverlay"
+          android:layout_width="0dp" android:layout_weight="1"
+          android:layout_height="wrap_content"
+          android:text="✗ 悬浮窗" android:textColor="#E74C3C" android:textSize="11sp"/>
+      <TextView android:id="@+id/statusNotification"
+          android:layout_width="0dp" android:layout_weight="1"
+          android:layout_height="wrap_content"
+          android:text="✗ 通知监听" android:textColor="#E74C3C" android:textSize="11sp"
+          android:gravity="center"/>
+      <TextView android:id="@+id/statusAccessibility"
+          android:layout_width="0dp" android:layout_weight="1"
+          android:layout_height="wrap_content"
+          android:text="✗ 无障碍" android:textColor="#E74C3C" android:textSize="11sp"
+          android:gravity="end"/>
     </LinearLayout>
 
-    <!-- Permission buttons -->
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="horizontal" android:layout_marginBottom="8dp">
-      <Button android:id="@+id/btnOverlay"
-          android:layout_width="0dp" android:layout_weight="1"
-          android:layout_height="46dp" android:text="① 悬浮窗权限"
-          android:backgroundTint="#F0F0F0" android:textColor="#333333"
-          android:textSize="13sp" android:layout_marginEnd="6dp"/>
-      <Button android:id="@+id/btnNotification"
-          android:layout_width="0dp" android:layout_weight="1"
-          android:layout_height="46dp" android:text="② 通知监听权限"
-          android:backgroundTint="#F0F0F0" android:textColor="#333333" android:textSize="13sp"/>
-    </LinearLayout>
+    <!-- Permission buttons: 3 steps -->
+    <Button android:id="@+id/btnOverlay"
+        android:layout_width="match_parent" android:layout_height="46dp"
+        android:text="第①步：开启悬浮窗权限"
+        android:backgroundTint="#F0F0F0" android:textColor="#333333"
+        android:textSize="13sp" android:layout_marginBottom="8dp"/>
+
+    <Button android:id="@+id/btnNotification"
+        android:layout_width="match_parent" android:layout_height="46dp"
+        android:text="第②步：开启通知监听权限"
+        android:backgroundTint="#F0F0F0" android:textColor="#333333"
+        android:textSize="13sp" android:layout_marginBottom="8dp"/>
+
+    <Button android:id="@+id/btnAccessibility"
+        android:layout_width="match_parent" android:layout_height="46dp"
+        android:text="第③步：开启无障碍权限（音乐/来电/导航）"
+        android:backgroundTint="#FFF8E7" android:textColor="#E67E22"
+        android:textSize="13sp" android:layout_marginBottom="16dp"/>
 
     <!-- Start -->
     <Button android:id="@+id/btnStart"
         android:layout_width="match_parent" android:layout_height="52dp"
         android:text="启动灵动岛"
-        android:backgroundTint="#111111" android:textColor="#FFFFFF"
+        android:backgroundTint="#CCCCCC" android:textColor="#FFFFFF"
         android:textStyle="bold" android:textSize="15sp"
         android:enabled="false" android:layout_marginBottom="6dp"/>
 
@@ -106,49 +103,49 @@
 
       <TextView android:id="@+id/labelY" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:text="纵向位置：-8px（负=上移进状态栏）"
-          android:textColor="#444444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+          android:textColor="#444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
       <SeekBar android:id="@+id/seekY" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:layout_marginBottom="16dp"
           android:progressTint="#111111" android:thumbTint="#111111"/>
 
       <TextView android:id="@+id/labelX" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:text="横向位置：0px"
-          android:textColor="#444444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+          android:textColor="#444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
       <SeekBar android:id="@+id/seekX" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:layout_marginBottom="16dp"
           android:progressTint="#111111" android:thumbTint="#111111"/>
 
       <TextView android:id="@+id/labelWidth" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:text="展开宽度：80%"
-          android:textColor="#444444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+          android:textColor="#444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
       <SeekBar android:id="@+id/seekWidth" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:layout_marginBottom="16dp"
           android:progressTint="#111111" android:thumbTint="#111111"/>
 
       <TextView android:id="@+id/labelPillW" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:text="收起宽度：120dp"
-          android:textColor="#444444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+          android:textColor="#444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
       <SeekBar android:id="@+id/seekPillW" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:layout_marginBottom="16dp"
           android:progressTint="#111111" android:thumbTint="#111111"/>
 
       <TextView android:id="@+id/labelPillH" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:text="收起高度：34dp"
-          android:textColor="#444444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+          android:textColor="#444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
       <SeekBar android:id="@+id/seekPillH" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:layout_marginBottom="16dp"
           android:progressTint="#111111" android:thumbTint="#111111"/>
 
       <TextView android:id="@+id/labelExpdH" android:layout_width="match_parent"
           android:layout_height="wrap_content" android:text="展开高度：70dp"
-          android:textColor="#444444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+          android:textColor="#444" android:textSize="12sp" android:layout_marginBottom="4dp"/>
       <SeekBar android:id="@+id/seekExpdH" android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:progressTint="#111111" android:thumbTint="#111111"/>
     </LinearLayout>
 
     <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:text="纵向调为负数可上移进入状态栏对准摄像头。展开后点击跳转 app，上划打开，下划关闭。多通知时底部圆点可切换。"
+        android:text="💡 三个权限都开启后才能启动。\n无障碍权限是获取音乐播放、来电、导航等实时信息的关键，找到「灵动岛」开启即可。\n纵向调为负数可上移进入状态栏覆盖原有胶囊。"
         android:textColor="#BBBBBB" android:textSize="11sp" android:lineSpacingMultiplier="1.6"
         android:layout_marginTop="14dp" android:layout_marginBottom="40dp"/>
 
